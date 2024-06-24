@@ -1,0 +1,40 @@
+Leu Andreea-Georgiana 323CD
+Am pornit implementarea de la laboratorul 9.
+
+
+Programul începe prin inițializarea unor variabile esențiale: sockfd pentru socketul de conexiune, message și response pentru stocarea mesajelor de trimis și a răspunsurilor de la server, și două variabile booleene is_logged_in și is_in_library pentru a ține evidența stării utilizatorului în raport cu autentificarea și accesul la bibliotecă. De asemenea, avem două liste cookies și tokens pentru gestionarea cookie-urilor și a tokenurilor de autentificare necesare pentru interacțiunea cu serverul.
+
+Programul rulează într-un ciclu infinit while(1), așteptând introducerea de comenzi de la utilizator. Când utilizatorul introduce o comandă, programul o procesează prin intermediul unei serii de blocuri if-else care verifică fiecare comandă posibilă și execută operațiunile corespunzătoare.
+
+Pentru prelucrarea datelor de tip JSON, am folosit biblioteca "parson" care oferă funcționalități pentru a parsa și a construi obiecte JSON. Astfel, am extras și am construit datele necesare pentru comunicarea cu serverul.
+
+Mesajele sunt construite pentru a respecta specificațiile HTTP. Funcțiile compute_post_request, compute_get_request și compute_delete_request sunt utilizate pentru a construi cererile HTTP corespunzătoare.
+
+Comenzile disponibile:
+1. register
+Această comandă permite unui nou utilizator să se înregistreze pe server. Programul solicită un nume de utilizator și o parolă, asigurându-se că acestea conțin doar caractere alfanumerice. Informațiile sunt apoi trimise serverului într-un format JSON. Dacă înregistrarea este reușită, utilizatorul primește un mesaj de succes, altfel primește o eroare.
+
+2. login
+Permite unui utilizator să se autentifice. Dacă este deja logat, va afișa o eroare. Similar înregistrării, utilizatorul trebuie să introducă un nume de utilizator și o parolă valide. La autentificare reușită, același proces ca și în cazul register este urmat pentru a crea un obiect JSON care conține numele de utilizator și parola, și pentru a le serializa într-un șir de caractere. Serverul trimite un cookie care este stocat și utilizat pentru sesiuni viitoare.
+
+3. enter_library
+Această comandă oferă utilizatorului acces la biblioteca de cărți, presupunând că utilizatorul este autentificat. Dacă nu este, va întoarce o eroare. Un token de acces este primit și stocat pentru utilizarea în comenzile ulterioare care necesită acces la bibliotecă. El este extras din răspunsul HTTP, parsat și stocat într-un obiect JSON, ca mai apoi să extragem valoarea asociată cheii "token".
+
+4. get_books
+Returnează lista de cărți disponibile în bibliotecă. Necesită ca utilizatorul să fie autentificat și să aibă acces la bibliotecă. Dacă nu are acces, va întoarce o eroare. Parsăm răspunsul HTTP într-un vector de format JSON și extragem din vector numele și ID-ul tuturor cărților din bibliotecă.
+
+5. get_book
+Afișează detaliile unei cărți specifice identificate prin ID. Necesită autentificare și acces la bibliotecă. Dacă aceste condiții nu sunt îndeplinite, va întoarce o eroare. Adăugăm la calea către bibliotecă ID-ul cărții și parsăm răspunsul HTTP pentru mesajul ce conține acea cale într-un obiect JSON și extragem din acesta toate detaliile cărții.
+
+6. add_book
+Permite utilizatorului să adauge o nouă carte în bibliotecă, introducând detalii precum titlul, autorul, genul, editura și numărul de pagini. Verificăm dacă nu primim nume sau dacă dăm un format nepotrivit pentru numărul de pagini, cazuri în care întoarcem eroare. Necesită autentificare și acces la bibliotecă. Construim un obiect JSON cu toate detaliile cărții și serializăm obiectul JSON într-un șir de caractere. Trimitem cererea către server și parsăm răspunsul HTTP pentru a afișa mesajul de succes sau eroare.
+
+7. delete_book
+Permite utilizatorului să șteargă o carte din bibliotecă identificată prin ID. Necesită autentificare și acces la bibliotecă. Formăm calea către cartea respectivă și construim cererea HTTP DELETE folosind-o pe ea, cât și token-urile de autentificare.
+
+8. logout
+Deconectează utilizatorul de la server, resetând starea de autentificare și accesul la bibliotecă. În acest caz, Parson nu este folosită direct pentru a construi cererea sau pentru a analiza răspunsul, deoarece răspunsul așteptat nu conține un obiect JSON complex, ci doar un mesaj de succes sau eroare. Totuși, procesul este similar cu celelalte acțiuni care utilizează cereri HTTP.
+În acest caz, Parson nu este folosită pentru a manipula obiecte JSON, deoarece răspunsul serverului la cererea de delogare este simplu și nu necesită parsare complexă. Mesajul primit de la server este verificat pentru a determina succesul operațiunii.
+
+9. exit
+Închide programul.
